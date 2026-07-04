@@ -1,5 +1,9 @@
 #pragma once
 
+#include <raylib.h>
+
+#include "sim/World.hpp"
+
 namespace lurk {
 
 // Owns the window lifecycle and drives the input -> update -> render loop.
@@ -20,6 +24,9 @@ private:
     void processInput();
     void update(float dt);
     void render() const;
+
+    World world_;
+    Camera2D camera_{};
 };
 
 } // namespace lurk

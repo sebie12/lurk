@@ -1,4 +1,4 @@
-#include "Game.hpp"
+#include "core/Game.hpp"
 
 int main() {
     lurk::Game game(1280, 720, "lurk");
