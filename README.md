@@ -5,8 +5,7 @@ A 2D survival game in C++ where a **learning hunter** stalks you across an
 lair, infiltrate it, and steal what it guards before it learns your habits, finds
 your base, and traps the paths you walk most.
 
-> ⚠️ **Early development.** The project is at Phase 1: an open window with a game
-> loop. See the [Roadmap](#roadmap) for where it's headed.
+> ⚠️ **Early development.**
 
 ## The idea
 
@@ -86,21 +85,6 @@ The guiding rule: build a dumb-but-complete game first (Phases 0–6), then laye
 intelligence (Phase 7), the endgame (Phase 8), and polish (Phase 9). Each phase gets
 running on screen before the next begins.
 
-### Phase 0: Project setup ✅
-Compiler, CMake, and Conan set up; a project that compiles a "hello world"
-executable; Git repo with `build/` ignored. Language: C++20.
-
-### Phase 1: Window, loop, and a moving sprite ⬅️ *current*
-- Open a window and run a stable game loop (input → update → render, delta-timed).
-- Draw a sprite/rectangle for the player.
-- Move it with WASD using delta time (frame-independent).
-- Add a camera that follows the player.
-
-### Phase 2: Tilemap and collision
-- Represent the world as a 2D grid of tile IDs; render the visible tiles relative to
-  the camera.
-- Implement AABB collision so the player can't walk through walls.
-- Bring in **EnTT** and model entities with components (Position, Velocity, Sprite).
 
 ### Phase 3: Procedural world generation (infinite)
 Infinite world → **chunking is mandatory**.
@@ -168,4 +152,3 @@ offline or in a separate process.
 - Add sound effects, music, and simple sprite animations.
 - Build and package release binaries per platform.
 
-See [roadmap.md](roadmap.md) for the full plan behind each phase.
