@@ -34,10 +34,8 @@ private:
     uint64_t seed_;
     std::unordered_map<ChunkCoord, Chunk, ChunkCoordHash> chunks_;
 
-    // Unload radius exceeds load radius on purpose: the gap is hysteresis, so
-    // pacing back and forth across a border doesn't thrash chunks.
-    static constexpr int kLoadRadius = 3;   // 7x7 chunks kept around the center
-    static constexpr int kUnloadRadius = 5;
+    static constexpr int kLoadRadius = config::LOAD_RADIUS;
+    static constexpr int kUnloadRadius = config::UNLOAD_RADIUS;
 };
 
 } // namespace lurk

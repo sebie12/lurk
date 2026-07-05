@@ -4,13 +4,10 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "sim/Config.hpp" // TILE_SIZE, CHUNK_TILES
 #include "sim/Vec2.hpp"
 
 namespace lurk {
-
-// --- World layout constants ---
-inline constexpr int TILE_SIZE = 32;    // pixels per tile edge
-inline constexpr int CHUNK_TILES = 16;  // tiles per chunk edge
 
 // Integer coordinate on the tile grid (one unit == one tile).
 struct TileCoord {
@@ -68,6 +65,16 @@ struct ChunkCoordHash {
     std::size_t operator()(ChunkCoord c) const noexcept {
         std::uint64_t h = (static_cast<std::uint64_t>(static_cast<std::uint32_t>(c.x)) << 32) |
                           static_cast<std::uint32_t>(c.y);
+        h *= 0x9E3779B97F4A7C15ull;
+        return static_cast<std::size_t>(h ^ (h >> 32));
+    }
+};
+
+// Same packing for TileCoord: A* keeps its open/closed sets keyed by tile.
+struct TileCoordHash {
+    std::size_t operator()(TileCoord t) const noexcept {
+        std::uint64_t h = (static_cast<std::uint64_t>(static_cast<std::uint32_t>(t.x)) << 32) |
+                          static_cast<std::uint32_t>(t.y);
         h *= 0x9E3779B97F4A7C15ull;
         return static_cast<std::size_t>(h ^ (h >> 32));
     }

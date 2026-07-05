@@ -25,7 +25,9 @@ public:
     entt::registry& registry() { return registry_; }
     const entt::registry& registry() const { return registry_; }
     entt::entity player() const { return player_; }
+    entt::entity enemy() const { return enemy_; }
     Vec2 playerPosition() const;
+    Vec2 enemyPosition() const;
 
     // Terrain query used by rendering and collision. Reads the resident chunk,
     // regenerating on the fly for the rare off-radius tile.
@@ -33,11 +35,12 @@ public:
     std::size_t loadedChunkCount() const { return chunks_.loadedCount(); }
 
 private:
-    // First walkable tile found spiralling out from the origin, in world pixels.
-    Vec2 findWalkableSpawn() const;
+    // First walkable tile found spiralling out from `origin`, in world pixels.
+    Vec2 findWalkableSpawn(TileCoord origin) const;
 
     entt::registry registry_;
     entt::entity player_{entt::null};
+    entt::entity enemy_{entt::null};
     ChunkManager chunks_;
 };
 

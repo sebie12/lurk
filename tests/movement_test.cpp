@@ -22,7 +22,7 @@ int main() {
     const entt::entity e = reg.create();
     reg.emplace<Position>(e, Vec2{0.0f, 0.0f});
     reg.emplace<Velocity>(e, Vec2{100.0f, 0.0f}); // 100 px/s
-    reg.emplace<Sprite>(e, 32.0f);
+    reg.emplace<Collider>(e, 16.0f);              // 32px box (half = 16)
 
     // Open terrain: position advances by velocity * dt.
     const auto empty = [](TileCoord) { return false; };
@@ -44,7 +44,7 @@ int main() {
     const entt::entity e2 = reg.create();
     reg.emplace<Position>(e2, Vec2{-40.0f, -40.0f});
     reg.emplace<Velocity>(e2, Vec2{0.0f, 20.0f});
-    reg.emplace<Sprite>(e2, 32.0f);
+    reg.emplace<Collider>(e2, 16.0f);
     movementSystem(reg, 1.0f, empty);
     CHECK(reg.get<Position>(e2).value.y == -20.0f);
 

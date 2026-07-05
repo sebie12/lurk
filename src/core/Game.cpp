@@ -93,16 +93,18 @@ void Game::render() const {
         }
     }
 
-    // Draw every renderable entity (Position + Sprite) as a white square.
+    // Draw every renderable entity (Position + Sprite). The hunter is red so it
+    // reads apart from the white player.
     const auto& registry = world_.registry();
     for (const entt::entity e : registry.view<Position, Sprite>()) {
         const Vec2 p = registry.get<Position>(e).value;
         const float s = registry.get<Sprite>(e).size;
+        const Color color = registry.all_of<Enemy>(e) ? Color{200, 60, 60, 255} : RAYWHITE;
         DrawRectangle(static_cast<int>(p.x - s / 2.0f),
                       static_cast<int>(p.y - s / 2.0f),
                       static_cast<int>(s),
                       static_cast<int>(s),
-                      RAYWHITE);
+                      color);
     }
     EndMode2D();
 

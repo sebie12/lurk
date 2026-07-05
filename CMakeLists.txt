@@ -44,3 +44,8 @@ add_executable(movement_test tests/movement_test.cpp)
 target_include_directories(movement_test PRIVATE src)
 target_link_libraries(movement_test EnTT::EnTT)
 add_test(NAME movement_test COMMAND movement_test)
+
+add_executable(pathfinding_test tests/pathfinding_test.cpp)
+target_include_directories(pathfinding_test PRIVATE src)
+target_link_libraries(pathfinding_test EnTT::EnTT)
+add_test(NAME pathfinding_test COMMAND pathfinding_test)
