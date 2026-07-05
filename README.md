@@ -5,6 +5,8 @@ A 2D survival game in C++ where a **learning hunter** stalks you across an
 lair, infiltrate it, and steal what it guards before it learns your habits, finds
 your base, and traps the paths you walk most.
 
+![lurk gameplay](figures/lurk_demo.png)
+
 > ⚠️ **Early development.**
 
 ## The idea
