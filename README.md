@@ -34,9 +34,9 @@ you frequent.
 | Build | CMake |
 | Dependencies | Conan 2 |
 | Rendering / input / audio | [raylib](https://www.raylib.com/) |
-| Architecture (planned) | [EnTT](https://github.com/skypjack/entt) (ECS) |
-| Procedural gen (planned) | FastNoiseLite |
-| Enemy AI (planned) | A* + FSM/behavior trees, then Markov → Q-learning → deep RL |
+| Architecture | [EnTT](https://github.com/skypjack/entt) (ECS) |
+| Procedural gen | Chunked, per-seed placeholder terrain now; FastNoiseLite planned |
+| Enemy AI | A* pathfinding implemented; FSM (patrol/chase/search) planned, then Markov → Q-learning → deep RL |
 
 ## Getting started
 
@@ -70,33 +70,47 @@ pitfalls) are in [BUILD.md](BUILD.md).
 ## Project layout
 
 ```
-src/          game source
-  main.cpp    entry point
-  Game.*      Game class: owns the window and the input→update→render loop
-CMakeLists.txt   build definition
-conanfile.txt    dependency manifest
-roadmap.md       phase-by-phase development plan
-BUILD.md         build & dependency reference
+src/
+  main.cpp          entry point
+  core/
+    Game.*          Game class: window, camera, and the input→update→render loop
+  sim/              engine-agnostic simulation (no raylib types)
+    World.*         owns the EnTT registry, spawns player/enemy, drives the tick
+    Components.hpp  ECS components (Position, Velocity, Sprite, Collider, Enemy, ...)
+    Chunk.hpp        one chunk's tile data
+    ChunkManager.*   streams chunks in/out around the player
+    WorldGen.*       per-chunk deterministic generation (placeholder terrain for now)
+    Pathfinding.hpp  A* over the tile grid
+    Movement.hpp     velocity integration + collision resolution
+    Collision.hpp    AABB checks against solid tiles
+    Coords.hpp       tile/chunk/world coordinate conversions
+    Config.hpp       tunable constants (speeds, tile size, spawn radius, ...)
+    Vec2.hpp         engine-agnostic 2D vector
+CMakeLists.txt    build definition
+conanfile.txt     dependency manifest
+ROADMAP.md        phase-by-phase development plan
+BUILD.md          build & dependency reference
 ```
 
 ## Roadmap
 
 The guiding rule: build a dumb-but-complete game first (Phases 0–6), then layer
 intelligence (Phase 7), the endgame (Phase 8), and polish (Phase 9). Each phase gets
-running on screen before the next begins.
+running on screen before the next begins. See [ROADMAP.md](ROADMAP.md) for the full
+task-by-task plan; the summary below tracks where each phase currently stands.
 
-
-### Phase 3: Procedural world generation (infinite)
+### Phase 3: Procedural world generation (infinite) — in progress
 Infinite world → **chunking is mandatory**.
-- Add FastNoiseLite; threshold a noise map into terrain tiles (water/sand/grass/rock).
-- Layer multiple octaves (fractal mode) for natural terrain.
-- Map (elevation, moisture) noise pairs to biomes; scatter objects (trees, rocks,
+- [x] Generate the world in chunks (e.g. 16×16 tiles) on demand; unload distant chunks.
+  Each chunk's RNG is seeded deterministically via a hash of `(seed, chunkX, chunkY)`
+  so revisited chunks regenerate identically.
+- [x] Thread a single **seed** through all generation.
+- [ ] Add FastNoiseLite; threshold a noise map into terrain tiles
+  (water/sand/grass/rock) — terrain is a deterministic placeholder until this lands.
+- [ ] Layer multiple octaves (fractal mode) for natural terrain.
+- [ ] Map (elevation, moisture) noise pairs to biomes; scatter objects (trees, rocks,
   ore) with noise-weighted probability so they cluster.
-- Thread a single **seed** through all generation.
-- Generate the world in chunks (e.g. 16×16 tiles) on demand; unload distant chunks.
-  Seed each chunk's RNG deterministically (`seed + chunkX + chunkY`) so revisited
-  chunks regenerate identically.
-- **Lair + clues:** derive the lair coordinate `L` deterministically from the seed
+- [ ] **Lair + clues:** derive the lair coordinate `L` deterministically from the seed
   (a point on a ring ~2000–5000 tiles from spawn). Because `L` is a pure function of
   the seed, each chunk can compute its direction/distance to `L` locally. Place
   directional clue objects oriented toward `L`, sparse far out and dense near it,
@@ -113,13 +127,14 @@ Infinite world → **chunking is mandatory**.
 - Store player modifications as **deltas** separate from the generated world, keyed
   per-chunk and saved/loaded with their chunk.
 
-### Phase 6: Basic enemy + game loop closure
-- Implement **A\*** pathfinding on the tile grid.
-- Add line-of-sight detection.
-- Build enemy states (FSM or behavior tree): **Patrol → Chase → Search
-  last-known-position → give up**.
-- On catch: game over → regenerate the world with a new seed.
-- *At this point the game is complete and playable.*
+### Phase 6: Basic enemy + game loop closure — in progress
+- [x] Implement **A\*** pathfinding on the tile grid; the hunter entity spawns and
+  continuously paths toward the player.
+- [ ] Add line-of-sight detection.
+- [ ] Build enemy states (FSM or behavior tree): **Patrol → Chase → Search
+  last-known-position → give up** (currently the hunter only chases).
+- [ ] On catch: game over → regenerate the world with a new seed.
+- *Once this phase closes, the game is complete and playable.*
 
 ### Phase 7: The adaptive/learning hunter
 Done in order; each is a real milestone. The learning system stays decoupled from the
