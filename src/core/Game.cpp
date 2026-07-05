@@ -11,7 +11,8 @@ Game::Game(int width, int height, const char* title) {
     InitWindow(width, height, title);
     SetTargetFPS(60);
 
-    // Center the view on the camera target; the target tracks the player.
+    // The offset (screen-space center) is refreshed each frame in update() so it
+    // tracks resolution changes (e.g. toggling fullscreen); seed it here too.
     camera_.offset = {width / 2.0f, height / 2.0f};
     const Vec2 spawn = world_.playerPosition();
     camera_.target = {spawn.x, spawn.y};
@@ -51,7 +52,9 @@ void Game::processInput() {
 void Game::update(float dt) {
     world_.update(dt);
 
-    // Camera follows the player.
+    // Keep the view centered on the player regardless of the current window /
+    // fullscreen resolution: offset is the screen-space point the target maps to.
+    camera_.offset = {GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f};
     const Vec2 p = world_.playerPosition();
     camera_.target = {p.x, p.y};
 }
