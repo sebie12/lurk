@@ -97,13 +97,42 @@ inline constexpr float ELEVATION_FREQUENCY = BASE_ELEVATION_FREQUENCY / TERRAIN_
 inline constexpr float MOISTURE_FREQUENCY = BASE_MOISTURE_FREQUENCY / TERRAIN_RESOLUTION;
 
 // --- Entities (TUNING) ---
-inline constexpr float PLAYER_SPEED = 200.0f;   // px/s
+// PLAYER_SPEED is the player's SPRINT (full) speed; walking is WALK_SPEED_FACTOR
+// of it (see the vitals block below).
+inline constexpr float PLAYER_SPEED = 200.0f;   // px/s (sprint)
 inline constexpr float ENEMY_SPEED = 160.0f;    // px/s
 inline constexpr float COLLIDER_HALF = 12.0f;   // hitbox half-extent in px (unaffected by resolution)
 // In tiles, so it scales with resolution to keep the spawn a constant pixel
 // distance from the player as tiles get finer.
 inline constexpr int BASE_ENEMY_SPAWN_RADIUS = 18; // tiles at resolution 1
 inline constexpr int ENEMY_SPAWN_RADIUS = BASE_ENEMY_SPAWN_RADIUS * TERRAIN_RESOLUTION;
+
+// --- Player vitals (TUNING) ---
+// Health and stamina both start full at MAX_* and are clamped to [0, max]. The
+// HUD draws current/max as a filled bar.
+inline constexpr float MAX_HEALTH = 100.0f;   // starting/maximum health
+inline constexpr float MAX_STAMINA = 100.0f;  // starting/maximum stamina
+
+// Sprinting (holding shift while moving) runs at PLAYER_SPEED and drains stamina;
+// releasing shift (or running dry) drops to WALK_SPEED_FACTOR of that speed and
+// stamina regenerates. Rates are per second so the drain/regen stay
+// frame-independent.
+inline constexpr float WALK_SPEED_FACTOR = 0.5f;   // walk = half of sprint speed
+inline constexpr float STAMINA_DRAIN_RATE = 25.0f; // stamina/s spent while sprinting
+inline constexpr float STAMINA_REGEN_RATE = 15.0f; // stamina/s recovered otherwise
+
+// --- Inventory (TUNING) ---
+inline constexpr int INVENTORY_CAPACITY = 20; // max distinct item stacks carried
+
+// --- HUD (TUNING) ---
+// Health/stamina bars, anchored bottom-left with health stacked above stamina.
+// Pure pixel values (no raylib types) so they belong here; the bar COLOURS are
+// raylib Colors and live in core/Hud.cpp, which is not engine-agnostic.
+inline constexpr float HUD_BAR_WIDTH = 220.0f;   // bar length in px
+inline constexpr float HUD_BAR_HEIGHT = 18.0f;   // bar thickness in px
+inline constexpr float HUD_BAR_MARGIN = 20.0f;   // gap from the screen edges in px
+inline constexpr float HUD_BAR_SPACING = 6.0f;   // vertical gap between the two bars in px
+inline constexpr float HUD_BAR_BORDER = 2.0f;    // outline thickness in px
 
 // --- Enemy pathfinding (TUNING) ---
 inline constexpr float REPATH_INTERVAL = 0.5f;         // seconds between A* recomputes

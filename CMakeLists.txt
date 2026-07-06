@@ -10,6 +10,7 @@ find_package(EnTT REQUIRED)
 add_executable(game
     src/main.cpp
     src/core/Game.cpp
+    src/core/Hud.cpp
     src/sim/World.cpp
     src/sim/WorldGen.cpp
     src/sim/ChunkManager.cpp

@@ -2,6 +2,7 @@
 
 #include <raylib.h>
 
+#include "core/Hud.hpp"
 #include "sim/World.hpp"
 
 namespace lurk {
@@ -27,6 +28,7 @@ private:
 
     World world_;
     Camera2D camera_{};
+    Hud hud_;
 };
 
 } // namespace lurk

@@ -49,7 +49,9 @@ void Game::processInput() {
     if (IsKeyDown(KEY_S)) dir.y += 1.0f;
     if (IsKeyDown(KEY_A)) dir.x -= 1.0f;
     if (IsKeyDown(KEY_D)) dir.x += 1.0f;
-    world_.setPlayerMoveDir(normalized(dir));
+    // Either shift sprints; the sim decides if it's allowed (needs stamina).
+    const bool sprint = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+    world_.setPlayerInput(normalized(dir), sprint);
 }
 
 void Game::update(float dt) {
@@ -119,9 +121,12 @@ void Game::render() const {
     }
     EndMode2D();
 
-    DrawText("lurk / WASD to move", 20, 20, 20, GRAY);
+    DrawText("lurk / WASD to move, shift to sprint", 20, 20, 20, GRAY);
     DrawText(TextFormat("chunks loaded: %d", static_cast<int>(world_.loadedChunkCount())),
              20, 44, 20, GRAY);
+
+    // Player vitals overlay (health/stamina), drawn last so it sits on top.
+    hud_.draw(world_);
     EndDrawing();
 }
 

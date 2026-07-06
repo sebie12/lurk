@@ -20,6 +20,9 @@ World::World() : chunks_(config::WORLD_SEED) {
     registry_.emplace<Sprite>(player_, 32.0f);
     registry_.emplace<Collider>(player_, config::COLLIDER_HALF);
     registry_.emplace<Player>(player_);
+    registry_.emplace<Health>(player_);       // starts full (config::MAX_HEALTH)
+    registry_.emplace<Stamina>(player_);      // starts full (config::MAX_STAMINA)
+    registry_.emplace<Inventory>(player_);    // empty, capacity config::INVENTORY_CAPACITY
 
     // Spawn the hunter at a random walkable tile a short distance from the
     // player, so for this first cut it has ground to path across toward them.
@@ -44,6 +47,10 @@ World::World() : chunks_(config::WORLD_SEED) {
 void World::update(float dt) {
     const auto solid = [this](TileCoord t) { return isSolid(chunks_.tileAt(t)); };
 
+    // Turn the player's input intent into Velocity + stamina before anything
+    // integrates, so movementSystem below moves the player this frame.
+    updatePlayer(dt);
+
     // Hunter chooses/steers its path toward the player (sets Velocity only)...
     pathfindingSystem(registry_, dt, playerPosition(), solid);
 
@@ -55,9 +62,37 @@ void World::update(float dt) {
     chunks_.update(worldToChunk(playerPosition()));
 }
 
-void World::setPlayerMoveDir(Vec2 dir) {
-    const float speed = registry_.get<Player>(player_).speed;
-    registry_.get<Velocity>(player_).value = dir * speed;
+void World::setPlayerInput(Vec2 dir, bool sprint) {
+    playerMoveDir_ = dir;
+    playerSprinting_ = sprint;
+}
+
+void World::updatePlayer(float dt) {
+    auto& stamina = registry_.get<Stamina>(player_);
+    const float sprintSpeed = registry_.get<Player>(player_).speed;
+
+    // Sprinting only counts when actually moving and there's stamina left, so a
+    // stationary player holding shift neither speeds up nor drains, and running
+    // dry silently falls back to walking.
+    const bool moving = playerMoveDir_.x != 0.0f || playerMoveDir_.y != 0.0f;
+    const bool sprinting = playerSprinting_ && moving && stamina.current > 0.0f;
+
+    if (sprinting) {
+        stamina.current = std::max(0.0f, stamina.current - config::STAMINA_DRAIN_RATE * dt);
+    } else {
+        stamina.current = std::min(stamina.max, stamina.current + config::STAMINA_REGEN_RATE * dt);
+    }
+
+    const float factor = sprinting ? 1.0f : config::WALK_SPEED_FACTOR;
+    registry_.get<Velocity>(player_).value = playerMoveDir_ * (sprintSpeed * factor);
+}
+
+Inventory& World::inventory() {
+    return registry_.get<Inventory>(player_);
+}
+
+const Inventory& World::inventory() const {
+    return registry_.get<Inventory>(player_);
 }
 
 Vec2 World::playerPosition() const {

@@ -45,6 +45,36 @@ struct Enemy {
     float speed = config::ENEMY_SPEED; // pixels per second
 };
 
+// Player vitals. `current` is clamped to [0, max] by the systems that change it;
+// the HUD draws current/max as a filled bar. Health drops on damage (future),
+// Stamina drains while sprinting and regenerates otherwise.
+struct Health {
+    float current = config::MAX_HEALTH;
+    float max = config::MAX_HEALTH;
+};
+
+struct Stamina {
+    float current = config::MAX_STAMINA;
+    float max = config::MAX_STAMINA;
+};
+
+// One stack of a single item type. `itemId` indexes a future item table; `count`
+// is how many are held. Plain data, like every component here.
+struct ItemStack {
+    int itemId = 0;
+    int count = 0;
+};
+
+// The player's carried items -- an ECS component like the other player state
+// (Health, Stamina) rather than a standalone object, so it serializes with the
+// entity for save/load and is reachable anywhere via registry.get<Inventory>
+// (World::inventory() wraps that). `items` holds only the occupied slots and
+// never exceeds `capacity`.
+struct Inventory {
+    int capacity = config::INVENTORY_CAPACITY;
+    std::vector<ItemStack> items;
+};
+
 // A tile-by-tile path an entity is walking, plus a bookkeeping cursor. The
 // pathfinding system fills `path` (from A*) and advances `next` as waypoints are
 // reached; the movement system does the actual integration. Empty path => idle.
