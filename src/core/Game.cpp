@@ -1,5 +1,8 @@
 #include "core/Game.hpp"
 
+#include <array>   // std::size on the palette table
+#include <cstddef> // std::size_t
+
 #include <entt/entt.hpp>
 
 #include "sim/Components.hpp"
@@ -61,17 +64,22 @@ void Game::update(float dt) {
 
 namespace {
 
-// Terrain palette. Lives in core/ because Color is a raylib (rendering) type;
-// sim/ only knows the abstract TileId.
-Color tileColor(TileId id) {
-    switch (id) {
-        case TileId::Water: return Color{60, 110, 200, 255};
-        case TileId::Sand:  return Color{210, 190, 130, 255};
-        case TileId::Grass: return Color{70, 150, 80, 255};
-        case TileId::Rock:  return Color{120, 120, 130, 255};
-    }
-    return MAGENTA; // unreachable; makes an unmapped TileId obvious on screen
-}
+// Base terrain colours, indexed by TileId. Lives in core/ because Color is a
+// raylib (rendering) type; sim/ only knows the abstract TileId and its gameplay
+// props (see kTerrain in Chunk.hpp). Adding a terrain type = one row here in
+// enum order; the static_assert flags a missing one.
+constexpr Color kPalette[] = {
+    /* Water */ Color{ 60, 110, 200, 255},
+    /* Sand  */ Color{210, 190, 130, 255},
+    /* Grass */ Color{ 70, 150,  80, 255},
+    /* Rock  */ Color{120, 120, 130, 255},
+};
+static_assert(std::size(kPalette) == TILE_TYPE_COUNT,
+              "every TileId needs a colour in kPalette");
+
+// One static colour per terrain type for now; per-terrain textures will replace
+// this later.
+Color tileColor(TileId id) { return kPalette[static_cast<std::size_t>(id)]; }
 
 } // namespace
 

@@ -32,7 +32,7 @@ int main() {
     // Generation is not a constant field: scanning a wide region turns up more
     // than one biome. (Robust to smooth noise, where two adjacent chunks can
     // legitimately be uniform, e.g. both open water.)
-    bool seen[4] = {false, false, false, false};
+    bool seen[TILE_TYPE_COUNT] = {};
     int distinct = 0;
     for (int cy = -4; cy <= 4; ++cy) {
         for (int cx = -4; cx <= 4; ++cx) {
@@ -53,10 +53,10 @@ int main() {
     CHECK(chunkSeed(seed, {2, 3}) != chunkSeed(seed, {3, 2}));
     CHECK(chunkSeed(seed, {-1, 0}) != chunkSeed(seed, {0, -1}));
 
-    // Every generated tile is a valid TileId (0..3).
+    // Every generated tile is a valid, concrete TileId (never the Count sentinel).
     for (const TileId t : a.tiles) {
         const int v = static_cast<int>(t);
-        CHECK(v >= 0 && v <= 3);
+        CHECK(v >= 0 && v < static_cast<int>(TILE_TYPE_COUNT));
     }
 
     if (g_failures == 0) {

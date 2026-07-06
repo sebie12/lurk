@@ -25,23 +25,29 @@ uint64_t hashCoords(uint64_t seed, int x, int y) {
 }
 
 // A fractal OpenSimplex2 field. Low frequency == large features (continents);
-// more octaves == more fine detail layered on top.
+// more octaves == more fine detail layered on top. The FBm shape (octave
+// count, lacunarity, gain) is tunable from Config.hpp.
 FastNoiseLite makeNoise(int seed, float frequency) {
     FastNoiseLite n;
     n.SetSeed(seed);
     n.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     n.SetFractalType(FastNoiseLite::FractalType_FBm);
-    n.SetFractalOctaves(4);
+    n.SetFractalOctaves(config::FRACTAL_OCTAVES);
+    n.SetFractalLacunarity(config::FRACTAL_LACUNARITY);
+    n.SetFractalGain(config::FRACTAL_GAIN);
     n.SetFrequency(frequency);
     return n;
 }
 
-// Map an (elevation, moisture) pair, each in [0,1], to a terrain tile.
+// Map an (elevation, moisture) pair, each in [0,1], to a terrain tile. The
+// cut-off levels are tunable in Config.hpp, so how often each terrain appears
+// can be adjusted without touching this logic.
 TileId biome(float elevation, float moisture) {
-    if (elevation < 0.38f) return TileId::Water;      // seas and lakes
-    if (elevation < 0.44f) return TileId::Sand;       // beaches at the shoreline
-    if (elevation > 0.72f) return TileId::Rock;       // mountains
-    return moisture < 0.35f ? TileId::Sand : TileId::Grass; // dry flats vs grassland
+    if (elevation < config::WATER_LEVEL) return TileId::Water; // seas and lakes
+    if (elevation < config::BEACH_LEVEL) return TileId::Sand;  // beaches at the shoreline
+    if (elevation > config::ROCK_LEVEL) return TileId::Rock;   // mountains
+    // dry flats vs grassland
+    return moisture < config::DRY_MOISTURE ? TileId::Sand : TileId::Grass;
 }
 
 } // namespace
@@ -54,8 +60,9 @@ Chunk generateChunk(uint64_t seed, ChunkCoord c) {
     // Two decorrelated noise fields derived from the one world seed. Sampling at
     // GLOBAL tile coordinates makes the terrain one continuous function over the
     // whole world, so chunks are seamless at their borders.
-    FastNoiseLite elevation = makeNoise(static_cast<int>(seed), 0.008f);
-    FastNoiseLite moisture = makeNoise(static_cast<int>(seed ^ 0x9E3779B97F4A7C15ull), 0.012f);
+    FastNoiseLite elevation = makeNoise(static_cast<int>(seed), config::ELEVATION_FREQUENCY);
+    FastNoiseLite moisture =
+        makeNoise(static_cast<int>(seed ^ 0x9E3779B97F4A7C15ull), config::MOISTURE_FREQUENCY);
 
     Chunk chunk;
     for (int ly = 0; ly < CHUNK_TILES; ++ly) {
